@@ -945,9 +945,12 @@ defmodule Hologram.Compiler do
 
   # A manually ported function's clauses aren't encoded, so its raise sites have
   # no attempted clauses to report. Their heads are registered separately, from
-  # the IR of the Elixir function the port stands in for.
+  # the IR of the Elixir function the port stands in for. A port that only raises
+  # because its output is too big has no such raise sites, and its heads would be
+  # as big as that output (Cldr.Validity.U.encode_key/2's guards nest over a
+  # thousand closures deep, which overflows the stack of some browsers' parsers).
   defp render_manually_ported_clause_heads(ir_plt) do
-    CallGraph.manually_ported_elixir_mfas()
+    (CallGraph.manually_ported_elixir_mfas() -- CallGraph.too_big_output_elixir_mfas())
     |> Enum.map(fn {module, function, _arity} -> {module, function} end)
     |> Enum.uniq()
     |> Enum.sort()

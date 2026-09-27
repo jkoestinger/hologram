@@ -353,6 +353,13 @@ defmodule Hologram.Compiler.CallGraph do
   # * the function doesn't make sense on the client side
   # * the function must access the Hologram client runtime
   # * the function has only a client-side implementation
+  # Their ports only raise, so they never report the clauses a call was matched
+  # against, and their clause heads - as big as the output itself - aren't rendered.
+  @too_big_output_elixir_mfas [
+    {Cldr.Locale, :language_data, 0},
+    {Cldr.Validity.U, :encode_key, 2}
+  ]
+
   @manually_ported_elixir_mfas [
     {Application, :get_env, 3},
     {Cldr.Locale, :language_data, 0},
@@ -999,6 +1006,13 @@ defmodule Hologram.Compiler.CallGraph do
 
     put_graph(call_graph, graph)
   end
+
+  @doc """
+  Returns the manually ported Elixir MFAs whose ports only raise, because their
+  transpiled output is too big.
+  """
+  @spec too_big_output_elixir_mfas :: [mfa]
+  def too_big_output_elixir_mfas, do: @too_big_output_elixir_mfas
 
   @doc """
   Returns the list of Elixir MFAs that are manually ported to JavaScript.
