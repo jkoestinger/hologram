@@ -41,6 +41,7 @@ defmodule Hologram.CompilerTest do
   alias Hologram.Test.Fixtures.Compiler.Module39
   alias Hologram.Test.Fixtures.Compiler.Module4
   alias Hologram.Test.Fixtures.Compiler.Module40
+  alias Hologram.Test.Fixtures.Compiler.Module41
   alias Hologram.Test.Fixtures.Compiler.Module8
   alias Hologram.Test.Fixtures.Compiler.Module9
 
@@ -1387,6 +1388,19 @@ defmodule Hologram.CompilerTest do
                js,
                ~s/Interpreter.defineFunctionClauseHeads("Task", "await", 2, "public"/
              )
+    end
+
+    test "doesn't render the clause heads of ports whose output is too big", %{
+      encode_plt: encode_plt,
+      ir_plt: ir_plt,
+      runtime_mfas: runtime_mfas
+    } do
+      PLT.put(ir_plt, Cldr.Validity.U, IR.for_module(Module41))
+      on_exit(fn -> PLT.delete(ir_plt, Cldr.Validity.U) end)
+
+      js = build_runtime_js(runtime_mfas, ir_plt, encode_plt, MapSet.new(), [], js_dir: @js_dir)
+
+      refute String.contains?(js, ~s/Interpreter.defineFunctionClauseHeads("Cldr.Validity.U"/)
     end
 
     test "injects the client config when the presentation settings are enabled", %{

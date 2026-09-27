@@ -419,6 +419,14 @@ defmodule Hologram.Compiler.CallGraph do
     {URI, :encode, 2}
   ]
 
+  # The manually ported functions whose transpiled output is too big. Their ports
+  # only raise, so they never report the clauses a call was matched against, and
+  # their clause heads - as big as the output itself - aren't rendered.
+  @too_big_output_elixir_mfas [
+    {Cldr.Locale, :language_data, 0},
+    {Cldr.Validity.U, :encode_key, 2}
+  ]
+
   @mfas_used_by_all_pages_and_components [
     # Used by __params__/0 and __props__/0 functions injected into page and component modules respectively.
     {Enum, :reverse, 1},
@@ -1098,6 +1106,13 @@ defmodule Hologram.Compiler.CallGraph do
         :error
     end
   end
+
+  @doc """
+  Returns the manually ported Elixir MFAs whose ports only raise, because their
+  transpiled output is too big.
+  """
+  @spec too_big_output_elixir_mfas :: [mfa]
+  def too_big_output_elixir_mfas, do: @too_big_output_elixir_mfas
 
   @doc """
   Returns the list of Elixir MFAs that are manually ported to JavaScript.
